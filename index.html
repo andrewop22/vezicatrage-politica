@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #ffffff;
+    color: #1a1a1a;
+    padding: 20px;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .subtitle { font-size: 13px; color: #666; margin-bottom: 16px; }
+  .name-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: #444;
+  }
+  .name-wrap input {
+    font-size: 13px;
+    padding: 5px 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    width: 160px;
+  }
+  .sync-status {
+    font-size: 11px;
+    color: #999;
+    margin-left: auto;
+  }
+  .progress-wrap {
+    background: #f2f2f2;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .progress-bar-bg {
+    flex: 1;
+    height: 8px;
+    background: #e2e2e2;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: #2d7dd2;
+    border-radius: 4px;
+    transition: width 0.25s ease;
+  }
+  .progress-text { font-size: 12px; color: #555; white-space: nowrap; font-weight: 600; }
+  h2 {
+    font-size: 15px;
+    margin: 24px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #eaeaea;
+    color: #111;
+  }
+  .item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .item:hover { background: #f7f9fc; }
+  .item input[type="checkbox"] {
+    margin-top: 2px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    accent-color: #2d7dd2;
+    cursor: pointer;
+  }
+  .item label {
+    font-size: 13.5px;
+    line-height: 1.5;
+    cursor: pointer;
+  }
+  .item.checked label { color: #999; text-decoration: line-through; }
+  .item b { color: #111; }
+  .item.checked b { color: #999; }
+  .item-wrap { padding: 2px 8px 10px; }
+  .note-box {
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 6px;
+    margin-left: 28px;
+    padding: 6px 8px;
+    font-size: 12.5px;
+    font-family: inherit;
+    border: 1px solid #e2e2e2;
+    border-radius: 6px;
+    resize: vertical;
+    min-height: 32px;
+    color: #333;
+    background: #fafafa;
+  }
+  .note-box:focus { outline: none; border-color: #2d7dd2; background: #fff; }
+  .note-meta {
+    font-size: 11px;
+    color: #999;
+    margin-left: 28px;
+    margin-top: 4px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .footer-note {
+    margin-top: 24px;
+    font-size: 12px;
+    color: #777;
+    border-top: 1px solid #eee;
+    padding-top: 12px;
+  }
+  .reset-btn {
+    font-size: 12px;
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 5px 10px;
+    color: #666;
+    cursor: pointer;
+  }
+  .reset-btn:hover { background: #f2f2f2; }
+</style>
+</head>
+<body>
+
+<h1>Checklist de testare — Vezi că Trage</h1>
+<div class="subtitle">vezicatragev2 · testează pe telefon, cu <code>npx expo start</code> · sincronizat live (Supabase) — orice completezi apare și pe telefonul celuilalt tester</div>
+
+<div class="name-wrap">
+  <span>Numele tău:</span>
+  <input type="text" id="nameInput" placeholder="ex: Ella">
+  <span class="sync-status" id="syncStatus">se încarcă...</span>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar" style="width:0%"></div></div>
+  <div class="progress-text" id="progressText">0 / 0</div>
+  <button class="reset-btn" id="resetBtn">Resetează tot</button>
+</div>
+
+<div id="content"></div>
+
+<div class="footer-note">
+  Dacă găsești ceva ciudat la oricare punct, notează exact ce pas ai făcut și ce s-a întâmplat (sau ce ar fi trebuit să se întâmple și nu s-a întâmplat) — se repară imediat.
+</div>
+
+<script>
+const DATA = [
+  { section: "Ecranul Trasee", items: [
+    ["gps-navigare", "GPS/navigare", "pornește o înregistrare de traseu (Start), lasă-l să meargă câteva secunde, verifică că punctele GPS se adaugă normal pe hartă."],
+    ["gps-tab", "GPS + schimbare tab", "în timp ce înregistrezi, comută pe alt tab (Comunitate) și revino după 10-15 secunde pe Trasee — traseul trebuie să continue neîntrerupt, fără puncte lipsă."],
+    ["gps-oprit", "GPS oprit corect", "ieși de pe tab-ul Trasee FĂRĂ nicio înregistrare activă, așteaptă câteva secunde, revino — locația trebuie să se reactiveze normal (nu blocat)."],
+    ["permisiune", "Permisiune refuzată", "dacă poți testa (Settings → refuză locația pentru aplicație), verifică că apare mesajul „Nu avem acces la locație” cu buton „Încearcă din nou”, nu spinner infinit."],
+    ["navigare-salvat", "Navigare pe traseu salvat", "deschide un traseu salvat, apasă navigare — verifică că linia portocalie (de urmat) dispare și rămâne doar cea albastră (activă) după ce ajungi la punctul de start."],
+    ["distante", "Distanțe afișate", "verifică că distanța km afișată la un traseu pare rezonabilă (nu umflată artificial)."],
+    ["salvare", "Salvare traseu", "înregistrează un traseu scurt, apasă Stop, salvează cu un nume — modalul de salvare trebuie să arate exact ca înainte."],
+    ["distribuire", "Distribuire traseu", "din lista „Traseele mele”, distribuie un traseu în Comunitate — modalul trebuie să arate numele traseului corect."],
+    ["alerte-grupate", "Alerte grupate pe hartă", "apasă pe un grup de alerte (cluster) de pe hartă — modalul cu lista de alerte trebuie să se deschidă normal."],
+    ["offline-trasee", "Offline", "pune telefonul pe Airplane Mode, deschide tab-ul Trasee — traseele salvate anterior trebuie să rămână vizibile (din cache), nu goale."],
+    ["inregistrare-offline", "Înregistrare traseu, fără internet", "pune Airplane Mode ÎNAINTE de Start, înregistrează un traseu scurt, apasă Stop și salvează — trebuie să apară „📵 Salvat local! Va fi sincronizat automat când revine internetul”, iar traseul trebuie să rămână vizibil în „Traseele mele” (marcat ca local). Revino cu internetul pornit și verifică sincronizarea automată."],
+    ["navigare-offline", "Navigare pe traseu salvat, fără internet", "deschide un traseu deja salvat/încărcat, pune apoi Airplane Mode, și navighează pe el — trebuie să meargă normal (linie, distanță, poziție), fiindcă navigarea folosește doar GPS-ul telefonului + traseul deja încărcat, nu internetul."],
+    ["anulare-salvare", "Anulare la salvare traseu", "înregistrează un traseu, apasă Stop, apoi în popup-ul de salvare apasă „Anulează” (nu „Salvează”) — linia parcursă și punctul de start (albastru) trebuie să dispară complet de pe hartă (fix aplicat 2026-07-08)."],
+    ["alerta-offline", "Alertă offline", "pune telefonul pe Airplane Mode, postează o alertă — pictograma trebuie să apară imediat pe hartă (local), apoi să rămână (nu să dispară) după ce revine internetul și se sincronizează (fix aplicat 2026-07-08)."],
+    ["confirmare-instant", "Confirmare alertă — instant", "apasă checkmark-ul (✓) la o alertă (atât în lista din Alertă, cât și în popup-ul de cluster) — contorul trebuie să crească pe loc, fără să fie nevoie să ieși și să reintri pe ecran (fix aplicat 2026-07-08)."],
+    ["confirmare-singulara", "Confirmare alertă singulară", "apasă pe un pin de alertă care NU e grupat (nu are cifră/badge pe el) — trebuie să se deschidă popup-ul cu opțiunea de confirmare (✓), la fel ca la un grup (fix aplicat 2026-07-08)."],
+    ["linie-albastra", "Linia (verde) de traseu parcurs la navigare, mers pe jos", "navighează pe un traseu salvat, mergând pe jos (viteză mică) — linia trebuie să avanseze lin, fără să dispară/reapară brusc (2 fix-uri aplicate 2026-07-08: fereastra de căutare pe traseu, plus eliminarea unui `key` de pe Polyline care forța recrearea liniei la fiecare citire GPS — cauza principală)."],
+    ["followcam", "Follow-cam la înregistrare traseu (nou, 2026-07-08)", "pornește o înregistrare (Start) și mergi — harta trebuie să se centreze/urmărească automat poziția ta, cu un zoom rezonabil (mai larg decât la navigare, ca să vezi zona din jur)."],
+    ["followcam-manual", "Follow-cam — recentrare manuală", "cât timp înregistrezi, trage/mută harta manual (ca să te uiți în altă zonă) — verifică dacă și cât de repede o re-centrează automat GPS-ul pe poziția ta (la fiecare citire nouă, adică la câteva secunde). Dacă recentrarea automată e prea agresivă, spune-i lui Claude — se poate adăuga un buton „urmărire pornit/oprit”."],
+  ]},
+  { section: "Ecranul Comunitate", items: [
+    ["feed-offline", "Feed offline — mesaj corect (nou, 2026-07-08)", "pune telefonul pe Airplane Mode și deschide tab-ul Postări — trebuie să apară „Nu s-a putut conecta” (cu 📵), NU „Fii primul care postează!” (care dădea impresia greșită că feed-ul e gol, nu că n-a reușit să se încarce)."],
+    ["cautare-notificari", "Căutare din tab-ul Notificări (nou, 2026-07-08)", "din tab-ul Notificări, apasă pe 🔍 și scrie ceva — trebuie să te comute automat pe tab-ul Postări și să arate rezultatele din feed acolo (înainte căutarea „dispărea în gol”, fără niciun rezultat afișat)."],
+    ["postare-poze", "Postare cu poze", "postează ceva cu 1-2 poze, cu semnal bun — verifică că poza apare normal în feed."],
+    ["postare-fara-semnal", "Postare fără semnal", "dacă poți simula conexiune proastă/Airplane Mode pornit-oprit rapid în timpul postării, verifică că apare o alertă clară dacă poza nu se încarcă (nu dispare tăcut)."],
+    ["comentarii-deschidere", "Comentarii — deschidere", "apasă pe comentarii la o postare, verifică că modalul se deschide și scroll-ul e fluid, ca înainte."],
+    ["comentarii-like", "Comentarii — like", "dă like la un comentariu, închide și redeschide modalul comentariilor (sau ieși din aplicație și reintră) — like-ul trebuie să rămână salvat, nu să dispară."],
+    ["comentarii-raspunsuri", "Comentarii — răspunsuri", "răspunde la un comentariu, verifică că apare corect sub el, cu „Vezi răspunsuri”."],
+    ["comentarii-actiuni", "Comentarii — acțiuni", "apasă „⋯” pe un comentariu al altcuiva — verifică că apar opțiunile de raportare/blocare, ca înainte."],
+    ["poze-fullscreen", "Poze fullscreen", "apasă pe o poză dintr-o postare — trebuie să se deschidă fullscreen, cu săgeți dacă sunt mai multe poze."],
+    ["avatar-fullscreen", "Avatar fullscreen", "apasă pe avatarul cuiva — trebuie să se deschidă mărit."],
+    ["like-postare", "Like postare", "verifică că like-ul la postări (nu comentarii) funcționează la fel ca înainte."],
+  ]},
+  { section: "Moderare & cont (lipseau din checklist, adăugate acum)", items: [
+    ["raportare-postare", "Raportare postare", "apasă „⋯” pe o postare a altcuiva → Raportează — verifică că apare confirmarea și că postarea NU dispare imediat pentru tine (ar trebui să dispară automat doar după ce se adună mai multe raportări, nu la prima)."],
+    ["raportare-comentariu", "Raportare comentariu", "la fel, dar pe un comentariu al altcuiva."],
+    ["blocheaza-user", "Blochează utilizator", "apasă „⋯” pe o postare/comentariu al altcuiva → Blochează — verifică că, după blocare, postările/comentariile acelui utilizator dispar din feed-ul tău (nu doar postarea pe care ai raportat-o)."],
+    ["deblocheaza-user", "Deblocare utilizator", "dacă există opțiunea în Contul meu, verifică că poți vedea lista de utilizatori blocați și că îi poți debloca, iar conținutul lor reapare."],
+    ["stergere-cont", "Ștergere cont", "din Contul meu → „Șterge contul definitiv” — verifică că apare o confirmare clară înainte de ștergere (nu se șterge din greșeală la o singură apăsare), și că mesajul spune corect ce se șterge (jurnal, trasee, postări, comentarii). ⚠️ Testează cu un cont de test, nu cu contul tău principal, ca să nu pierzi datele reale."],
+    ["dupa-stergere", "După ștergere cont", "verifică că nu mai poți intra cu acel cont și că, dacă altcineva caută postările/comentariile lui, nu mai apar (sau apar marcate ca fiind de la un utilizator șters, nu crapă ecranul)."],
+  ]},
+  { section: "Moderare admin (nou, 2026-07-10)", items: [
+    ["admin-fixeaza", "Fixează o postare (ca admin)", "pe orice postare din feed, apasă „⋯” → „Fixează postarea” — postarea trebuie să apară imediat prima în feed (deasupra tuturor celorlalte, indiferent de dată), cu eticheta „📌 Fixat” lângă ea."],
+    ["admin-defixeaza", "Defixează o postare (ca admin)", "pe o postare deja fixată, apasă „⋯” → „Defixează postarea” — trebuie să revină la poziția ei normală, cronologică, iar eticheta „📌 Fixat” să dispară."],
+    ["admin-sterge-postare", "Șterge orice postare (ca admin)", "pe o postare a ALTCUIVA (nu a ta), apasă „⋯” → trebuie să apară „Șterge postarea (admin)” — șterge-o și verifică că dispare din feed la toată lumea."],
+    ["admin-sterge-comentariu", "Șterge orice comentariu (ca admin)", "la un comentariu al ALTCUIVA, apasă butonul roșu „🗑️ admin” de lângă el — trebuie să ceară confirmare și să șteargă comentariul definitiv."],
+    ["admin-invizibil-user-normal", "Opțiunile de admin NU apar la un cont normal", "loghează-te cu un cont care NU e în tabelul `admini` — verifică că (1) NU apare „Fixează postarea” în meniul „⋯”, (2) NU apare butonul roșu „🗑️ admin” lângă comentarii, (3) la o postare a altcuiva, meniul „⋯” arată doar Raportează/Blochează, nu și „Șterge postarea (admin)”."],
+    ["postari-noi-fals-pozitiv", "„Postări noi” nu reapare fals după fixare (nou, 2026-07-10)", "fixează o postare mai veche ca admin, apoi scrollează în feed și reîmprospătează câteva ori — bannerul „X postări noi” NU trebuie să reapară la nesfârșit pentru postări deja văzute (fix aplicat 2026-07-10)."],
+  ]},
+  { section: "Ecranul Cote → Detalii (nou, 2026-07-08)", items: [
+    ["prognoza-zile", "Zilele din „Prognoză 5 zile”", "deschide detaliile unei cote/locații — cardul „Azi” trebuie să arate vremea de azi, iar următoarele 4 carduri trebuie să fie exact următoarele 4 zile calendaristice, în ordine (ex: dacă azi e Miercuri → Joi, Vineri, Sâmbătă, Duminică). Fix aplicat 2026-07-08 — înainte zilele erau hardcodate („Azi, Lun, Mar, Mie, Joi”), indiferent de ziua reală."],
+  ]},
+  { section: "Splash screen (nou, 2026-07-08)", items: [
+    ["splash", "Ecran de pornire", "închide complet aplicația (force-quit, nu doar minimizată) și redeschide-o de la zero — pentru o clipă (1-2 secunde) ar trebui să vezi fundal bleumarin închis cu cârligul alb centrat, nu ecran alb sau gol. Apare doar la un build nativ (dev client/EAS), nu doar la reload din Metro."],
+  ]},
+  { section: "Banner intern de promovare (nou, 2026-07-08)", items: [
+    ["banner-aparitie", "Apariție banner", "adaugă manual un rând în tabelul `promotii` din Supabase (activ, cu poză și link), deschide aplicația — bannerul trebuie să apară sus, peste orice ecran."],
+    ["banner-inchidere", "Închidere", "apasă X — bannerul dispare și nu mai reapare la o redeschidere ulterioară (cât timp e aceeași promoție)."],
+    ["banner-noua", "Promoție nouă", "adaugă un al doilea rând (nou) în `promotii` — trebuie să apară, chiar dacă ai închis deja promoția anterioară."],
+    ["banner-link", "Link", "apasă pe „Click aici pentru promoție” — dacă `link_url` e completat, trebuie să deschidă acel link în browser (dacă `link_url` e gol, textul nu ar trebui să apară deloc)."],
+    ["banner-aspect", "Aspect nou (centrat, mare)", "bannerul trebuie să apară acum ca un card mare, centrat pe mijlocul ecranului, cu fundal întunecat în spate — nu ca o bară subțire sus (schimbare 2026-07-08)."],
+    ["banner-poza-x", "Poză necropată + X vizibil", "poza trebuie să se vadă întreagă (nu tăiată ciudat), iar butonul X trebuie să aibă un fundal rotund semi-transparent, vizibil clar peste poză (fix aplicat 2026-07-08)."],
+    ["banner-propagare", "Propagare fără restart", "adaugă un rând nou în `promotii` cât timp aplicația e deja deschisă — bannerul trebuie să apară automat, fie la minimizare/revenire, fie în maximum ~60 secunde dacă stai continuu în aplicație (fix aplicat 2026-07-08)."],
+    ["banner-retrimitere", "Retrimitere prin trimitere_nr (nou, 2026-07-08)", "închide un banner (X), apoi crește `trimitere_nr` cu 1 pe același rând din Supabase (fără să creezi rând nou) — bannerul trebuie să reapară, la fel ca la o promoție complet nouă."],
+    ["banner-realtime", "Propagare instant (Realtime, nou, 2026-07-08)", "cu aplicația deschisă în față, incrementează `trimitere_nr` (sau adaugă un rând nou) direct în Supabase — bannerul trebuie să apară în câteva secunde, fără să minimizezi/redeschizi aplicația și fără să aștepți 60s."],
+    ["banner-reconectare", "Reconectare automată Realtime", "incrementează `trimitere_nr` de mai multe ori la rând (pauze de 10-20s) — trebuie să rămână instant de fiecare dată, chiar dacă apare `CLOSED` în consolă (ar trebui să reapară `SUBSCRIBED` automat, fără reload manual)."],
+    ["banner-picker-conflict", "Fără conflict cu selectorul de poze (nou, 2026-07-09)", "deschide selectorul de galerie (Comunitate → adaugă poză la o postare, SAU Contul meu → schimbă poza de profil) și, cât timp galeria e deschisă, incrementează `trimitere_nr` în Supabase — aplicația trebuie să rămână complet funcțională (toate butoanele răspund), bannerul NU trebuie să apară peste galerie, ci abia după ce închizi/termini selectorul de poze."],
+    ["banner-traseu-conflict", "Fără banner peste înregistrare/navigare traseu (nou, 2026-07-09)", "pornește o înregistrare (Start) SAU o navigare pe un traseu salvat, și cât timp e activă, incrementează `trimitere_nr` în Supabase — bannerul NU trebuie să apară peste hartă în acel moment (înregistrarea/navigarea continuă normal pe dedesubt), ci abia după Stop / ieșire din navigare / părăsirea ecranului Trasee."],
+  ]},
+  { section: "General", items: [
+    ["login-logout", "Login/logout", "intră și ieși din cont, verifică că nu apare nicio eroare (crash)."],
+    ["navigare-generala", "Navigare generală", "treci prin toate tab-urile (Cote, Trasee, Comunitate, Informații, Contul meu) — verifică că nimic nu arată diferit vizual față de înainte."],
+  ]},
+  { section: "Conformitate legală / GDPR (nou, 2026-07-09)", items: [
+    ["dpa-terti", "Data Processing Agreement (DPA) cu furnizorii terți", "intră în contul de admin al fiecărui serviciu folosit (Clerk, Supabase, Sentry, Google, Apple) și caută secțiunea „Data Processing Agreement” / „GDPR” / „Legal” — de obicei e un buton simplu de acceptare. Necesar fiindcă aplicația targetează România (UE), deci userii sunt sub GDPR."],
+  ]},
+];
+
+// Sincronizare partajată prin Supabase (tabelul `checklist_progres`), ca tu
+// și prietenul tău să vedeți amândoi aceleași bife/observații, indiferent de
+// dispozitiv — spre deosebire de varianta anterioară, care ținea totul doar
+// local pe fiecare telefon/calculator în parte.
+const SUPABASE_URL = 'https://khzjcuinhoqinmksinny.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtoempjdWluaG9xaW5ta3Npbm55Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1ODQ0NjksImV4cCI6MjA5ODE2MDQ2OX0.KvJ6_04IRiwqRjk5SEL3zitNU8kle5gBSN-NyRshFGk';
+const TABLE = 'checklist_progres';
+const REST_URL = `${SUPABASE_URL}/rest/v1/${TABLE}`;
+const SB_HEADERS = {
+  apikey: SUPABASE_ANON_KEY,
+  Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+  'Content-Type': 'application/json',
+};
+
+const NAME_KEY = 'vct_checklist_nume';
+let numeTester = localStorage.getItem(NAME_KEY) || '';
+const nameInput = document.getElementById('nameInput');
+nameInput.value = numeTester;
+nameInput.addEventListener('input', (e) => {
+  numeTester = e.target.value;
+  localStorage.setItem(NAME_KEY, numeTester);
+});
+
+const syncStatus = document.getElementById('syncStatus');
+
+// rows[id] = { bifat, nota, actualizat_de }
+let rows = {};
+
+const content = document.getElementById('content');
+const bar = document.getElementById('bar');
+const progressText = document.getElementById('progressText');
+
+function render() {
+  // Nu redesenăm dacă tocmai se scrie într-un câmp de observații — am
+  // pierde cursorul/poziția din câmp la fiecare re-populare de la server.
+  if (document.activeElement && document.activeElement.classList && document.activeElement.classList.contains('note-box')) {
+    return;
+  }
+  content.innerHTML = '';
+  let total = 0, done = 0;
+  DATA.forEach(sec => {
+    const h2 = document.createElement('h2');
+    h2.textContent = sec.section;
+    content.appendChild(h2);
+    sec.items.forEach(([id, title, desc]) => {
+      total++;
+      const r = rows[id] || { bifat: false, nota: '', actualizat_de: null };
+      if (r.bifat) done++;
+      const wrap = document.createElement('div');
+      wrap.className = 'item-wrap';
+
+      const row = document.createElement('div');
+      row.className = 'item' + (r.bifat ? ' checked' : '');
+      row.innerHTML = `
+        <input type="checkbox" id="cb-${id}" ${r.bifat ? 'checked' : ''}>
+        <label for="cb-${id}"><b>${title}</b>: ${desc}</label>
+      `;
+      row.querySelector('input').addEventListener('change', (e) => {
+        salveaza(id, { bifat: e.target.checked });
+      });
+      wrap.appendChild(row);
+
+      const textarea = document.createElement('textarea');
+      textarea.className = 'note-box';
+      textarea.placeholder = 'Scrie aici ce ai observat la acest punct...';
+      textarea.value = r.nota || '';
+      let debounceTimer = null;
+      textarea.addEventListener('input', (e) => {
+        clearTimeout(debounceTimer);
+        const valoare = e.target.value;
+        // Debounce de 600ms — nu trimitem o cerere la fiecare literă tastată,
+        // ci abia după ce te-ai oprit puțin din scris.
+        debounceTimer = setTimeout(() => salveaza(id, { nota: valoare }), 600);
+      });
+      wrap.appendChild(textarea);
+
+      const meta = document.createElement('div');
+      meta.className = 'note-meta';
+      meta.innerHTML = `<span>${r.actualizat_de ? 'ultima actualizare: ' + r.actualizat_de : ''}</span>`;
+      wrap.appendChild(meta);
+
+      content.appendChild(wrap);
+    });
+  });
+  bar.style.width = total ? Math.round((done / total) * 100) + '%' : '0%';
+  progressText.textContent = done + ' / ' + total;
+}
+
+async function incarca() {
+  try {
+    const res = await fetch(`${REST_URL}?select=id,bifat,nota,actualizat_de`, { headers: SB_HEADERS });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    rows = {};
+    data.forEach(r => { rows[r.id] = r; });
+    syncStatus.textContent = 'sincronizat ✓';
+    render();
+  } catch (e) {
+    syncStatus.textContent = 'eroare conexiune — reîncerc...';
+  }
+}
+
+async function salveaza(id, campuri) {
+  // Actualizăm local instant (fără să așteptăm răspunsul serverului), ca
+  // interfața să reacționeze imediat la apăsare/tastare.
+  rows[id] = { ...(rows[id] || { bifat: false, nota: '' }), ...campuri, actualizat_de: numeTester || null };
+  if (campuri.hasOwnProperty('bifat')) render();
+
+  try {
+    const body = {
+      id,
+      ...campuri,
+      actualizat_de: numeTester || null,
+      actualizat_la: new Date().toISOString(),
+    };
+    const res = await fetch(REST_URL, {
+      method: 'POST',
+      headers: { ...SB_HEADERS, Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([body]),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    syncStatus.textContent = 'sincronizat ✓';
+  } catch (e) {
+    syncStatus.textContent = 'nu s-a putut salva — verifică internetul';
+  }
+}
+
+document.getElementById('resetBtn').addEventListener('click', async () => {
+  if (!confirm('Resetezi toate bifele ȘI observațiile scrise, pentru TOȚI cei care folosesc acest checklist?')) return;
+  const toateIdurile = DATA.flatMap(sec => sec.items.map(([id]) => id));
+  syncStatus.textContent = 'se resetează...';
+  try {
+    await Promise.all(toateIdurile.map(id => salveaza(id, { bifat: false, nota: '' })));
+    await incarca();
+  } catch (e) {
+    syncStatus.textContent = 'eroare la resetare';
+  }
+});
+
+// Reverificăm periodic ce a completat celălalt tester — plasă simplă de
+// sincronizare (nu Realtime cu websocket, ca să nu avem nevoie de nicio
+// librărie externă în acest fișier HTML de sine stătător).
+incarca();
+setInterval(incarca, 8000);
+</script>
+
+</body>
+</html>
