@@ -12,7 +12,7 @@ Operator de date: **Opriș Ioan-Andrei**, persoană fizică, dezvoltator indepen
 
 Pentru orice întrebare sau solicitare legată de datele tale, poți scrie oricând la:
 
-📧 **andrei.opris22@gmail.com**
+📧 **administrator@vezicatrage.click**
 
 Sau prin poștă la: Opriș Ioan-Andrei, 103C Drumul Fermei, bl. 4, ap. 17, Popești-Leordeni, Județul Ilfov 077160, România.
 
@@ -91,7 +91,7 @@ Am implementat măsuri tehnice și organizatorice rezonabile pentru a proteja in
 
 Aplicația nu este destinată copiilor. Vârsta minimă de utilizare este **16 ani** — aceasta este vârsta de consimțământ digital stabilită de GDPR pentru România. Dacă ai sub 16 ani, ai nevoie de acordul unui părinte sau tutore pentru a folosi aplicația.
 
-Dacă aflăm că un minor sub 16 ani și-a creat un cont fără acordul părinților, vom dezactiva contul și vom șterge datele colectate. Dacă știi despre un astfel de caz, te rugăm să ne contactezi la andrei.opris22@gmail.com.
+Dacă aflăm că un minor sub 16 ani și-a creat un cont fără acordul părinților, vom dezactiva contul și vom șterge datele colectate. Dacă știi despre un astfel de caz, te rugăm să ne contactezi la administrator@vezicatrage.click.
 
 ---
 
@@ -107,7 +107,7 @@ Conform GDPR, ai dreptul la:
 - **Retragerea consimțământului** — în orice moment, fără să afecteze legalitatea prelucrării anterioare;
 - **Plângere** — la Autoritatea Națională de Supraveghere a Prelucrării Datelor cu Caracter Personal (ANSPDCP), [www.dataprotection.ro](https://www.dataprotection.ro), dacă consideri că drepturile tale au fost încălcate.
 
-Pentru acces, rectificare, portabilitate sau opoziție, scrie-ne la andrei.opris22@gmail.com — **răspundem în maximum 30 de zile**.
+Pentru acces, rectificare, portabilitate sau opoziție, scrie-ne la administrator@vezicatrage.click — **răspundem în maximum 30 de zile**.
 
 **Renunțarea la comunicări de marketing:** poți dezactiva notificările push din setările telefonului sau poți închide bannerele promoționale din aplicație oricând.
 
@@ -127,7 +127,7 @@ Putem actualiza această politică din când în când. Orice modificare semnifi
 
 ## 13. Contact
 
-📧 **andrei.opris22@gmail.com**
+📧 **administrator@vezicatrage.click**
 
 Opriș Ioan-Andrei
 103C Drumul Fermei, bl. 4, ap. 17
