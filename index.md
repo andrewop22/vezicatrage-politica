@@ -54,7 +54,8 @@ Aplicația **nu** colectează date financiare, **nu vinde** datele tale către n
 | Furnizor | Rol |
 |---|---|
 | **Clerk** | Autentificare și gestionarea contului (email/parolă, Google, Apple) |
-| **Supabase** | Bază de date și stocarea fotografiilor încărcate în aplicație |
+| **Supabase** | Bază de date |
+| **Cloudflare (R2)** | Stocarea fotografiilor încărcate în aplicație (postări din Comunitate) |
 | **Sentry** | Monitorizarea erorilor și performanței aplicației |
 | **Google Maps Platform** | Afișarea hărților și a traseelor |
 | **Open-Meteo** | Date meteo publice — primește doar coordonate GPS anonime, fără date personale |
